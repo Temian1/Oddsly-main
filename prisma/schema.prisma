@@ -1,0 +1,292 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// USER MANAGEMENT & AUTHENTICATION
+// ================================
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  passwordHash       String    @map("password_hash")
+  fullName           String?   @map("full_name")
+  dateOfBirth        DateTime? @map("date_of_birth") @db.Date
+  subscriptionStatus String    @default("free") @map("subscription_status")
+  role               String    @default("user") // 'user', 'admin', 'premium'
+  
+  // 2FA Settings
+  twoFaEnabled       Boolean   @default(false) @map("two_fa_enabled")
+  twoFaSecret        String?   @map("two_fa_secret")
+  twoFaBackupCodes   String[]  @map("two_fa_backup_codes")
+  
+  // Account Status
+  isActive           Boolean   @default(true) @map("is_active")
+  isVerified         Boolean   @default(false) @map("is_verified")
+  lastLoginAt        DateTime? @map("last_login_at")
+  
+  // Preferences
+  preferences        Json?     @default("{}")
+  
+  // Timestamps
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  bookmarks          UserBookmark[]
+  bets               UserBet[]
+  sessions           UserSession[]
+  analytics          UserAnalytics[]
+  
+  @@map("users")
+}
+
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_sessions")
+}
+
+// ================================
+// SPORTS & PLATFORMS
+// ================================
+
+model Sport {
+  id          Int     @id @default(autoincrement())
+  key         String  @unique
+  name        String
+  displayName String  @map("display_name")
+  active      Boolean @default(true)
+  season      String?
+  
+  // Relations
+  historicalProps HistoricalProp[]
+  hitRates        HitRate[]
+  
+  @@map("sports")
+}
+
+model Platform {
+  id           Int     @id @default(autoincrement())
+  key          String  @unique
+  name         String
+  displayName  String  @map("display_name")
+  platformType String  @map("platform_type") // 'dfs', 'sportsbook'
+  multipliers  Json?   // Platform-specific payout multipliers
+  active       Boolean @default(true)
+  logoUrl      String? @map("logo_url")
+  
+  // Relations
+  historicalProps HistoricalProp[]
+  bookmarks       UserBookmark[]
+  bets            UserBet[]
+  
+  @@map("platforms")
+}
+
+// ================================
+// HISTORICAL DATA & HIT RATES
+// ================================
+
+model HistoricalProp {
+  id           String    @id @default(cuid())
+  playerName   String    @map("player_name")
+  propType     String    @map("prop_type")
+  line         Decimal   @db.Decimal(10, 2)
+  actualResult Decimal?  @map("actual_result") @db.Decimal(10, 2)
+  hit          Boolean?
+  gameDate     DateTime  @map("game_date") @db.Date
+  sportId      Int       @map("sport_id")
+  platformId   Int       @map("platform_id")
+  season       String?
+  odds         Int?      // American odds format
+  
+  // Game Context
+  gameId       String?   @map("game_id")
+  homeTeam     String?   @map("home_team")
+  awayTeam     String?   @map("away_team")
+  
+  // Metadata
+  confidence   String?   // 'high', 'medium', 'low'
+  source       String?   // Data source identifier
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  sport    Sport    @relation(fields: [sportId], references: [id])
+  platform Platform @relation(fields: [platformId], references: [id])
+  
+  @@unique([playerName, propType, line, gameDate, sportId, platformId])
+  @@map("historical_props")
+}
+
+model HitRate {
+  id              String   @id @default(cuid())
+  playerName      String   @map("player_name")
+  propType        String   @map("prop_type")
+  lineRangeMin    Decimal  @map("line_range_min") @db.Decimal(10, 2)
+  lineRangeMax    Decimal  @map("line_range_max") @db.Decimal(10, 2)
+  hitRate         Decimal  @map("hit_rate") @db.Decimal(5, 4) // 0.0000 to 1.0000
+  gameCount       Int      @map("game_count")
+  confidenceLevel String   @map("confidence_level") // 'high', 'medium', 'low'
+  sportId         Int      @map("sport_id")
+  season          String?
+  
+  // Statistical Metrics
+  standardError   Decimal? @map("standard_error") @db.Decimal(6, 5)
+  confidenceInterval Json? @map("confidence_interval")
+  
+  // Timestamps
+  lastUpdated     DateTime @default(now()) @map("last_updated")
+  
+  // Relations
+  sport Sport @relation(fields: [sportId], references: [id])
+  
+  @@unique([playerName, propType, lineRangeMin, lineRangeMax, sportId, season])
+  @@map("hit_rates")
+}
+
+// ================================
+// USER INTERACTIONS
+// ================================
+
+model UserBookmark {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  playerName String   @map("player_name")
+  propType   String   @map("prop_type")
+  line       Decimal  @db.Decimal(10, 2)
+  platformId Int      @map("platform_id")
+  
+  // Additional Context
+  notes      String?
+  tags       String[] @default([])
+  
+  // Timestamps
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform Platform @relation(fields: [platformId], references: [id])
+  
+  @@unique([userId, playerName, propType, line, platformId])
+  @@map("user_bookmarks")
+}
+
+model UserBet {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  playerName   String   @map("player_name")
+  propType     String   @map("prop_type")
+  line         Decimal  @db.Decimal(10, 2)
+  predictedEv  Decimal  @map("predicted_ev") @db.Decimal(5, 4)
+  betAmount    Decimal? @map("bet_amount") @db.Decimal(10, 2)
+  actualResult Decimal? @map("actual_result") @db.Decimal(10, 2)
+  won          Boolean?
+  profitLoss   Decimal? @map("profit_loss") @db.Decimal(10, 2)
+  platformId   Int      @map("platform_id")
+  
+  // Bet Context
+  odds         Int?     // American odds at time of bet
+  confidence   String?  // User's confidence level
+  gameDate     DateTime? @map("game_date") @db.Date
+  
+  // Kelly Criterion
+  kellyFraction Decimal? @map("kelly_fraction") @db.Decimal(5, 4)
+  
+  // Timestamps
+  betDate      DateTime @default(now()) @map("bet_date")
+  settledAt    DateTime? @map("settled_at")
+  
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform Platform @relation(fields: [platformId], references: [id])
+  
+  @@map("user_bets")
+}
+
+// ================================
+// ANALYTICS & PERFORMANCE
+// ================================
+
+model UserAnalytics {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  
+  // Performance Metrics
+  totalBets        Int     @default(0) @map("total_bets")
+  winningBets      Int     @default(0) @map("winning_bets")
+  winRate          Decimal @default(0) @map("win_rate") @db.Decimal(5, 4)
+  totalProfit      Decimal @default(0) @map("total_profit") @db.Decimal(12, 2)
+  averageEv        Decimal @default(0) @map("average_ev") @db.Decimal(5, 4)
+  
+  // ROI Metrics
+  totalWagered     Decimal @default(0) @map("total_wagered") @db.Decimal(12, 2)
+  roi              Decimal @default(0) @db.Decimal(6, 4)
+  
+  // Streaks
+  currentStreak    Int     @default(0) @map("current_streak")
+  longestWinStreak Int     @default(0) @map("longest_win_streak")
+  
+  // Time Period
+  periodStart      DateTime @map("period_start") @db.Date
+  periodEnd        DateTime @map("period_end") @db.Date
+  
+  // Timestamps
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, periodStart, periodEnd])
+  @@map("user_analytics")
+}
+
+// ================================
+// SYSTEM CONFIGURATION
+// ================================
+
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     Json
+  category  String?  // 'auth', 'api', 'features', etc.
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("system_config")
+}
+
+model ApiUsage {
+  id        String   @id @default(cuid())
+  endpoint  String
+  method    String
+  userId    String?  @map("user_id")
+  ipAddress String   @map("ip_address")
+  userAgent String?  @map("user_agent")
+  timestamp DateTime @default(now())
+  
+  @@map("api_usage")
+}
+
+// ================================
+// INDEXES FOR PERFORMANCE
+// ================================
+
+// Add indexes for frequently queried fields
+// These will be created automatically by Prisma based on the relations and unique constraints above
+// Additional custom indexes can be added here if needed for specific query patterns

@@ -1,0 +1,20 @@
+.table {
+    border-collapse: separate;
+}
+
+.sticky-column {
+    position: sticky;
+    left: 0; /* or whichever position is needed */
+    background-color: white; /* Ensure it overlaps content underneath */
+    border-right: 1px solid #ddd; /* Visible border for sticky column */
+    z-index: 1; /* Stays on top of scrolling elements */
+}
+.sticky-column::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -1px; /* Adjust based on border width */
+    bottom: 0;
+    width: 1px; /* Same width as the border */
+    background-color: #ddd; /* Matches the border color */
+}
