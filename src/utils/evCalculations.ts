@@ -25,6 +25,7 @@ export interface PropEVData {
   confidence?: 'high' | 'medium' | 'low';
   gameCount?: number;
   sport?: string;
+  lastUpdated?: string;
 }
 
 export interface FantasyPlatformConfig {
