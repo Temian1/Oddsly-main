@@ -189,7 +189,6 @@ export const EVDashboard: React.FC<EVDashboardProps> = ({
   const filteredProps = useMemo(() => {
     return processedProps.filter(prop => {
       const ev = calculatePropEVFromData(prop);
-      const confidence = getConfidenceLevel(prop.hitRate, prop.gameCount);
       
       // Apply filters
       if (ev.evPercentage < quickFilter.minEV) return false;
@@ -214,7 +213,7 @@ export const EVDashboard: React.FC<EVDashboardProps> = ({
     });
     
     const highConfidenceProps = processedProps.filter(prop => {
-      const confidence = getConfidenceLevel(prop.hitRate, prop.gameCount);
+      const confidence = getConfidenceLevel(prop.hitRate, prop.gameCount || 10);
       return confidence === 'high';
     });
     
@@ -303,7 +302,7 @@ export const EVDashboard: React.FC<EVDashboardProps> = ({
             <List>
               {topProps.map((prop, index) => {
                 const ev = calculatePropEVFromData(prop);
-                const confidence = getConfidenceLevel(prop.hitRate, prop.gameCount);
+                const confidence = getConfidenceLevel(prop.hitRate, prop.gameCount || 10);
                 const isBookmarked = bookmarkedProps.has(prop.id);
                 
                 return (
@@ -319,7 +318,7 @@ export const EVDashboard: React.FC<EVDashboardProps> = ({
                   >
                     <ListItemIcon>
                       <Badge badgeContent={index + 1} color="primary">
-                        {SPORT_ICONS[prop.sport] || <SportsSoccer />}
+                        {SPORT_ICONS[prop.sport || 'default'] || <SportsSoccer />}
                       </Badge>
                     </ListItemIcon>
                     

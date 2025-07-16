@@ -32,11 +32,11 @@ import {
   Bookmark,
   BookmarkBorder,
   // Visibility,
-  // VisibilityOff,
+  VisibilityOff,
   // FilterList,
   // Sort,
   Refresh,
-  // Settings,
+  Settings,
   // Share,
   // Download
 } from '@mui/icons-material';

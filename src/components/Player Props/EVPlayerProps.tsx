@@ -191,7 +191,7 @@ const EVPlayerProps: React.FC<EVPlayerPropsProps> = ({
 
   /* ++++++++++ GRID ROWS ++++++++++ */
   const rows: GridRow[] = useMemo(() => {
-    return filteredAndSortedProps.map((prop, index) => ({
+    return filteredAndSortedProps.map((prop) => ({
       ...prop,
       displayName: prop.playerName,
       propDisplay: `${prop.propType.replace('player_', '').replace('_', ' ')} ${prop.line > 0 ? `O/U ${prop.line}` : ''}`,
