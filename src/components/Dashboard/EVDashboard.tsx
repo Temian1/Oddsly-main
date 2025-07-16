@@ -53,7 +53,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 
 /* ++++++++++ IMPORTS ++++++++++ */
-import { fetchDFSProps, SUPPORTED_PLAYER_PROP_SPORTS } from '../../services/api';
+import { fetchDFSProps, SUPPORTED_PLAYER_PROP_SPORTS, calculateImpliedProbability, calculateEV, isPositiveEV } from '../../services/api';
 import { PropEVData, calculatePropEVFromData, getConfidenceLevel, formatEVPercentage, formatHitRate } from '../../utils/evCalculations';
 import { dataAutomationClient } from '../../services/dataAutomationClient';
 import ValueHighlighter from '../ValueHighlighting/ValueHighlighter';
@@ -163,6 +163,11 @@ export const EVDashboard: React.FC<EVDashboardProps> = ({
               outcome.point || 0
             );
             
+            // Calculate implied probability and EV
+            const impliedProb = calculateImpliedProbability(outcome.price);
+            const evPercentage = calculateEV(hitRate, impliedProb) * 100;
+            const isPositive = isPositiveEV(hitRate, impliedProb);
+            
             const prop: PropEVData = {
               id: `${outcome.description}-${market.key}-${bookmaker.key}`,
               playerName: outcome.description,
@@ -171,6 +176,9 @@ export const EVDashboard: React.FC<EVDashboardProps> = ({
               odds: outcome.price,
               platform: bookmaker.key,
               hitRate,
+              impliedProbability: impliedProb,
+              evPercentage,
+              isPositiveEV: isPositive,
               gameCount: 15, // Default game count
               sport: sportData.sport_key || 'unknown',
               lastUpdated: new Date().toISOString()
