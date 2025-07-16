@@ -11,7 +11,8 @@ import useAuth from '../../authorization/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ++++++++++ ICONS ++++++++++ */
-import { Settings, TrendingUp, Target, Star, BarChart3 } from 'lucide-react';
+import { Settings, TrendingUp, Star, BarChart3 } from 'lucide-react';
+// import { Settings, TrendingUp, Target, Star, BarChart3 } from 'lucide-react';
 
 /* ++++++++++ STYLES ++++++++++ */
 import './Header.css';

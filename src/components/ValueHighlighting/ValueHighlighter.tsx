@@ -13,34 +13,35 @@ import {
   Tooltip,
   Badge,
   LinearProgress,
-  Divider,
+  // Divider,
   Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon
+  // List,
+  // ListItem,
+  // ListItemText,
+  // ListItemIcon
 } from '@mui/material';
 import {
-  TrendingUp,
-  Star,
-  Warning,
-  Info,
-  Refresh,
-  Settings,
-  Visibility,
-  VisibilityOff,
-  FilterList,
-  Sort,
-  BookmarkBorder,
+  // TrendingUp,
+  // Star,
+  // Warning,
+  // Info,
   Bookmark,
-  Share,
-  Download
+  BookmarkBorder,
+  // Visibility,
+  // VisibilityOff,
+  // FilterList,
+  // Sort,
+  Refresh,
+  // Settings,
+  // Share,
+  // Download
 } from '@mui/icons-material';
-import { PropEVData, calculatePropEVFromData, getConfidenceLevel, formatEVPercentage, formatHitRate } from '../../utils/evCalculations';
+import { PropEVData, getConfidenceLevel, formatEVPercentage, formatHitRate } from '../../utils/evCalculations';
+// import { PropEVData, calculatePropEVFromData, getConfidenceLevel, formatEVPercentage, formatHitRate } from '../../utils/evCalculations';
 import { dataAutomationClient } from '../../services/dataAutomationClient';
 
 /* ++++++++++ TYPES ++++++++++ */
@@ -91,12 +92,12 @@ const DEFAULT_SETTINGS: HighlightSettings = {
   }
 };
 
-const ALERT_COLORS = {
-  high_ev: '#4caf50',
-  hot_streak: '#ff9800',
-  line_movement: '#2196f3',
-  new_value: '#9c27b0'
-};
+// const ALERT_COLORS = {
+//   high_ev: '#4caf50',
+//   hot_streak: '#ff9800',
+//   line_movement: '#2196f3',
+//   new_value: '#9c27b0'
+// };
 
 const CONFIDENCE_COLORS = {
   high: '#4caf50',
@@ -113,7 +114,8 @@ export const ValueHighlighter: React.FC<ValueHighlighterProps> = ({
   refreshInterval = 300000 // 5 minutes
 }) => {
   const [alerts, setAlerts] = useState<ValueAlert[]>([]);
-  const [settings, setSettings] = useState<HighlightSettings>(DEFAULT_SETTINGS);
+  const [settings] = useState<HighlightSettings>(DEFAULT_SETTINGS);
+  // const [settings, setSettings] = useState<HighlightSettings>(DEFAULT_SETTINGS);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [bookmarkedProps, setBookmarkedProps] = useState<Set<string>>(new Set());
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());

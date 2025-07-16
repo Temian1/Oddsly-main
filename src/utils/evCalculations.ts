@@ -11,6 +11,7 @@ import {
 
 /* ++++++++++ TYPES ++++++++++ */
 export interface PropEVData {
+  id: string;
   playerName: string;
   propType: string;
   line: number;
@@ -22,6 +23,8 @@ export interface PropEVData {
   isPositiveEV: boolean;
   recommendedBet?: number;
   confidence?: 'high' | 'medium' | 'low';
+  gameCount?: number;
+  sport?: string;
 }
 
 export interface FantasyPlatformConfig {
@@ -123,6 +126,7 @@ export const calculatePropEV = async (
   const confidence = getConfidenceLevel(hitRate, Math.abs(evPercentage));
   
   return {
+    id: `${playerName}-${propType}-${line}-${platform}`,
     playerName,
     propType,
     line,

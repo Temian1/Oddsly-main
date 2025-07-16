@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth, usePremium } from '../../authorization/AuthContext';
+import { useAuth } from '../../authorization/AuthContext';
+// import { useAuth, usePremium } from '../../authorization/AuthContext';
 import { AuthService } from '../../services/authClient';
-import { User, Edit3, Save, X, Calendar, Mail, Shield, CreditCard, Key, QrCode, Copy } from 'lucide-react';
+// Icons removed as they are not currently used in this component
 
 interface UserProfileData {
   fullName: string;
@@ -11,7 +12,7 @@ interface UserProfileData {
 
 const UserProfile: React.FC = () => {
   const { user, refreshAuth } = useAuth();
-  const isPremium = usePremium();
+  // const isPremium = usePremium(); // Unused variable
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -21,13 +22,13 @@ const UserProfile: React.FC = () => {
   // Profile state
   const [profile, setProfile] = useState<UserProfileData | null>(null);
 
-  // 2FA State
-  const [show2FASetup, setShow2FASetup] = useState(false);
-  const [twoFASecret, setTwoFASecret] = useState('');
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const [backupCodes, setBackupCodes] = useState<string[]>([]);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [disablePassword, setDisablePassword] = useState('');
+  // 2FA State - Currently unused
+  // const [show2FASetup, setShow2FASetup] = useState(false);
+  // const [twoFASecret, setTwoFASecret] = useState('');
+  // const [qrCodeUrl, setQrCodeUrl] = useState('');
+  // const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  // const [verificationCode, setVerificationCode] = useState('');
+  // const [disablePassword, setDisablePassword] = useState('');
 
   // Initialize profile from user data
   useEffect(() => {
@@ -55,7 +56,7 @@ const UserProfile: React.FC = () => {
     }
 
     try {
-      const updatedUser = await AuthService.updateProfile(user.id, {
+      await AuthService.updateProfile(user.id, {
         fullName: profile.fullName,
         dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth) : undefined,
       });

@@ -153,11 +153,11 @@ const popularBookmakers: Bookmaker[] = [
 ];
 
 // DFS Platforms for fantasy props
-const dfsBookmakers: Bookmaker[] = [
-  { key: 'us_dfs.prizepicks', title: 'PrizePicks' },
-  { key: 'us_dfs.underdog', title: 'Underdog Fantasy' },
-  { key: 'us_dfs.pick6', title: 'DraftKings Pick6' },
-];
+// const dfsBookmakers: Bookmaker[] = [
+//   { key: 'us_dfs.prizepicks', title: 'PrizePicks' },
+//   { key: 'us_dfs.underdog', title: 'Underdog Fantasy' },
+//   { key: 'us_dfs.pick6', title: 'DraftKings Pick6' },
+// ];
 
 /* ++++++++++ MATERIAL UI THEME ++++++++++ */
 const theme = createTheme({

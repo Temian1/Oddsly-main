@@ -306,10 +306,10 @@ export const isPositiveEV = (
 
 // Historical data simulation (replace with actual database calls)
 export const getHistoricalHitRate = async (
-  playerName: string,
-  propType: string,
-  line: number,
-  gameCount: number = 20
+  _playerName: string,
+  _propType: string,
+  _line: number,
+  _gameCount: number = 20
 ): Promise<number> => {
   // TODO: Replace with actual database query
   // For now, return simulated data based on prop type and line

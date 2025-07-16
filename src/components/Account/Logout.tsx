@@ -1,14 +1,12 @@
 /* ++++++++++ AUTHORIZATION ++++++++++ */
-import { signOut } from '../../authorization/AuthService';
 import useAuth from '../../authorization/useAuth';
 
 const Logout = () => {
-  const { refreshAuth } = useAuth();
+  const { logout } = useAuth();
 
   // Handle logout
   const handleLogout = async () => {
-    await signOut(); // Call the signOut function
-    refreshAuth(); // Refresh the authentication context
+    await logout(); // Call the logout function from AuthContext
   };
 
   return (

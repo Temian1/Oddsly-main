@@ -91,8 +91,8 @@ export class JWTUtils {
     const payload = { userId, type: 'access' };
     const refreshPayload = { userId, type: 'refresh' };
 
-    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-    const refreshToken = jwt.sign(refreshPayload, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
+    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
+    const refreshToken = jwt.sign(refreshPayload, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions);
 
     // Calculate expiration time in seconds
     const expiresIn = this.getExpirationTime(JWT_EXPIRES_IN);
@@ -429,8 +429,8 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      fullName: user.fullName,
-      dateOfBirth: user.dateOfBirth,
+      fullName: user.fullName || undefined,
+      dateOfBirth: user.dateOfBirth || undefined,
       subscriptionStatus: user.subscriptionStatus,
       role: user.role,
       twoFaEnabled: user.twoFaEnabled,

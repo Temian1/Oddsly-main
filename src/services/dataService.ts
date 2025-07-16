@@ -232,7 +232,7 @@ export class DataService {
           lineRangeMin: hitRateData.lineRangeMin,
           lineRangeMax: hitRateData.lineRangeMax,
           sportId: sport.id,
-          season: season ?? null,
+          season: season || '',
         },
       },
       update: {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { signIn, signUp, forgotPassword } from "../../authorization/AuthService";
+import { signUp, forgotPassword } from "../../authorization/AuthService";
 import { useAuth } from "../../authorization/AuthContext";
 // ReCAPTCHA removed
 import { Eye, EyeOff, CheckCircle, XCircle, Shield } from "lucide-react";

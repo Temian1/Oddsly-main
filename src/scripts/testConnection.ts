@@ -48,18 +48,19 @@ async function testConnection() {
     console.error('❌ Database connection failed:', error);
     
     // Provide helpful error messages
-    if (error.message.includes('ECONNREFUSED')) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('ECONNREFUSED')) {
       console.log('\n💡 Troubleshooting tips:');
       console.log('   1. Make sure PostgreSQL is running');
       console.log('   2. Check your DATABASE_URL in .env file');
       console.log('   3. Verify database credentials');
       console.log('   4. Ensure database exists');
-    } else if (error.message.includes('authentication failed')) {
+    } else if (errorMessage.includes('authentication failed')) {
       console.log('\n💡 Authentication issue:');
       console.log('   1. Check username/password in DATABASE_URL');
       console.log('   2. Verify user has access to the database');
       console.log('   3. Check pg_hba.conf settings');
-    } else if (error.message.includes('database') && error.message.includes('does not exist')) {
+    } else if (errorMessage.includes('database') && errorMessage.includes('does not exist')) {
       console.log('\n💡 Database does not exist:');
       console.log('   1. Create the database: CREATE DATABASE oddsly_db;');
       console.log('   2. Run: npm run db:push');

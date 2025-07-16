@@ -112,7 +112,7 @@ function AppContent() {
               path="/ev-props"
               element={
                 <PrivateRoute user={user}>
-                  <EVPlayerProps bankroll={bankroll} setBankroll={setBankroll} />
+                  <EVPlayerProps sportKey="basketball_nba" bankroll={bankroll} setBankroll={setBankroll} />
                 </PrivateRoute>
               }
             />

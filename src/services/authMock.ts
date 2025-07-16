@@ -41,7 +41,7 @@ export interface TwoFASetup {
 // Mock user storage using localStorage
 class MockUserStorage {
   private static readonly USERS_KEY = 'mock_users';
-  private static readonly SESSIONS_KEY = 'mock_sessions';
+  // Sessions key removed as it's not currently used
 
   static getUsers(): UserProfile[] {
     const users = localStorage.getItem(this.USERS_KEY);
@@ -214,7 +214,7 @@ export class AuthService {
   }
 
   // Logout (mock implementation)
-  static async logout(refreshToken: string): Promise<void> {
+  static async logout(_refreshToken: string): Promise<void> {
     // In a real implementation, this would invalidate the token
     console.log('User logged out');
   }
@@ -231,7 +231,7 @@ export class AuthService {
   }
 
   // Enable 2FA (mock implementation)
-  static async enable2FA(token: string): Promise<{ backupCodes: string[] }> {
+  static async enable2FA(_token: string): Promise<{ backupCodes: string[] }> {
     return {
       backupCodes: Array.from({ length: 10 }, () => 
         Math.random().toString(36).substring(2, 10).toUpperCase()
@@ -240,7 +240,7 @@ export class AuthService {
   }
 
   // Disable 2FA (mock implementation)
-  static async disable2FA(password: string): Promise<void> {
+  static async disable2FA(_password: string): Promise<void> {
     console.log('2FA disabled');
   }
 
@@ -250,7 +250,7 @@ export class AuthService {
   }
 
   // Reset password (mock implementation)
-  static async resetPassword(token: string, newPassword: string): Promise<void> {
+  static async resetPassword(_token: string, _newPassword: string): Promise<void> {
     console.log('Password reset successfully');
   }
 }

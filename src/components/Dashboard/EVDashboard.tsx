@@ -1,5 +1,5 @@
 /* ++++++++++ EV DASHBOARD COMPONENT ++++++++++ */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Grid,
@@ -11,7 +11,7 @@ import {
   Alert,
   AlertTitle,
   LinearProgress,
-  Divider,
+  // Divider, // Unused import
   IconButton,
   Tooltip,
   Switch,
@@ -31,8 +31,8 @@ import {
   TrendingUp,
   Star,
   Refresh,
-  Settings,
-  Timeline,
+  // Settings, // Unused import
+  // Timeline, // Unused import
   Assessment,
   SportsSoccer,
   SportsBasketball,
@@ -40,14 +40,14 @@ import {
   SportsBaseball,
   SportsHockey,
   SportsTennis,
-  Notifications,
-  NotificationsActive,
+  // Notifications, // Unused import
+  // NotificationsActive, // Unused import
   BookmarkBorder,
   Bookmark,
-  FilterList,
-  Sort,
-  Visibility,
-  VisibilityOff
+  // FilterList, // Unused import
+  // Sort, // Unused import
+  // Visibility, // Unused import
+  // VisibilityOff // Unused import
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -111,10 +111,10 @@ const DFS_PLATFORMS = [
 
 /* ++++++++++ EV DASHBOARD COMPONENT ++++++++++ */
 export const EVDashboard: React.FC<EVDashboardProps> = ({
-  bankroll = 10000,
-  setBankroll
+  // bankroll = 10000, // Currently unused
+  // setBankroll // Currently unused
 }) => {
-  const [selectedSport, setSelectedSport] = useState<string>('all');
+  const [selectedSport] = useState<string>('all'); // setSelectedSport removed as unused
   const [quickFilter, setQuickFilter] = useState<QuickFilter>({
     sport: 'all',
     minEV: 5,

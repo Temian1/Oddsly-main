@@ -110,7 +110,8 @@ async function performHealthCheck(): Promise<HealthMetrics> {
     };
     
   } catch (error) {
-    throw new Error(`Health check failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Health check failed: ${errorMessage}`);
   }
 }
 
@@ -202,7 +203,8 @@ async function main() {
     process.exit(isHealthy ? 0 : 1);
     
   } catch (error) {
-    console.error('❌ Health check failed:', error.message);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Health check failed:', errorMessage);
     
     console.log('\n🔧 Troubleshooting:');
     console.log('   1. Ensure database is running');

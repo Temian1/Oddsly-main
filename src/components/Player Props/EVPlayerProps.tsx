@@ -1,5 +1,6 @@
 /* ++++++++++ IMPORTS ++++++++++ */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+// import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 /* ++++++++++ MATERIAL-UI ++++++++++ */
@@ -34,7 +35,6 @@ import {
   PropEVData,
   EVFilterOptions,
   calculatePropEVFromData,
-  getConfidenceLevel,
   filterPropsByEV,
   sortPropsByEV,
   formatEVPercentage,
@@ -42,8 +42,7 @@ import {
   formatImpliedProbability,
   getEVColor,
   getConfidenceColor,
-  FANTASY_PLATFORMS,
-  PROP_TYPE_CATEGORIES
+  FANTASY_PLATFORMS
 } from '../../utils/evCalculations';
 import { dataAutomationClient } from '../../services/dataAutomationClient';
 
@@ -52,6 +51,7 @@ interface EVPlayerPropsProps {
   sportKey: string;
   matchId?: string;
   bankroll?: number;
+  setBankroll?: (bankroll: number) => void;
 }
 
 interface DFSOutcome {
@@ -94,7 +94,7 @@ const theme = createTheme({
 const EVPlayerProps: React.FC<EVPlayerPropsProps> = ({ 
   sportKey, 
   matchId,
-  bankroll = 1000 
+  // bankroll = 1000 
 }) => {
   /* ++++++++++ STATE ++++++++++ */
   const [filters, setFilters] = useState<Partial<EVFilterOptions>>({
@@ -192,7 +192,6 @@ const EVPlayerProps: React.FC<EVPlayerPropsProps> = ({
   /* ++++++++++ GRID ROWS ++++++++++ */
   const rows: GridRow[] = useMemo(() => {
     return filteredAndSortedProps.map((prop, index) => ({
-      id: `${prop.playerName}-${prop.propType}-${prop.platform}-${index}`,
       ...prop,
       displayName: prop.playerName,
       propDisplay: `${prop.propType.replace('player_', '').replace('_', ' ')} ${prop.line > 0 ? `O/U ${prop.line}` : ''}`,

@@ -1,12 +1,11 @@
 /* ++++++++++ DATA AUTOMATION SERVICE ++++++++++ */
 import { fetchDFSProps, SUPPORTED_PLAYER_PROP_SPORTS } from './api';
-import { PropEVData, calculatePropEV } from '../utils/evCalculations';
+
 import { 
   saveHistoricalProp, 
   getHistoricalProps, 
   calculateAndSaveHitRate, 
-  getHitRate,
-  refreshDataAutomation 
+  getHitRate
 } from './dataService';
 
 /* ++++++++++ TYPES ++++++++++ */
@@ -57,37 +56,7 @@ const STORAGE_KEYS = {
 };
 
 /* ++++++++++ DATABASE UTILITIES ++++++++++ */
-class DatabaseStore {
-  static async get<T>(key: string, defaultValue: T): Promise<T> {
-    try {
-      // For configuration, still use localStorage as fallback
-      if (key === STORAGE_KEYS.CONFIG) {
-        const stored = localStorage.getItem(key);
-        return stored ? JSON.parse(stored) : defaultValue;
-      }
-      return defaultValue;
-    } catch {
-      return defaultValue;
-    }
-  }
-
-  static async set<T>(key: string, value: T): Promise<void> {
-    try {
-      // For configuration, still use localStorage
-      if (key === STORAGE_KEYS.CONFIG) {
-        localStorage.setItem(key, JSON.stringify(value));
-      }
-    } catch (error) {
-      console.warn('Failed to save configuration:', error);
-    }
-  }
-
-  static clear(key: string): void {
-    if (key === STORAGE_KEYS.CONFIG) {
-      localStorage.removeItem(key);
-    }
-  }
-}
+// Database store class removed as it's not currently used
 
 /* ++++++++++ DATA AUTOMATION CLASS ++++++++++ */
 export class DataAutomationService {
@@ -213,11 +182,11 @@ export class DataAutomationService {
             playerName: outcome.description,
             propType: market.key,
             line: outcome.point || 0,
-            gameDate: new Date(currentDate),
+            platform: bookmaker.key,
             sport,
-            season: this.getCurrentSeason(sport),
-            actualResult: null, // Will be updated when game results are available
-            hit: null // Will be calculated when actualResult is available
+            gameDate: new Date(currentDate),
+            actualResult: undefined, // Will be updated when game results are available
+            hit: undefined // Will be calculated when actualResult is available
           };
           
           try {
@@ -244,11 +213,11 @@ export class DataAutomationService {
       playerName,
       propType,
       line,
-      actualResult,
-      hit,
-      gameDate: new Date(gameDate),
+      platform: 'manual', // Default platform for manually added results
       sport,
-      season: this.getCurrentSeason(sport)
+      gameDate: new Date(gameDate),
+      actualResult,
+      hit
     };
 
     try {
@@ -336,12 +305,12 @@ export class DataAutomationService {
         id: `${prop.playerName}-${prop.propType}-${prop.gameDate.toISOString().split('T')[0]}`,
         playerName: prop.playerName,
         propType: prop.propType,
-        line: prop.line,
-        actualResult: prop.actualResult || 0,
+        line: typeof prop.line === 'object' && prop.line.toNumber ? prop.line.toNumber() : Number(prop.line),
+        actualResult: typeof prop.actualResult === 'object' && prop.actualResult?.toNumber ? prop.actualResult.toNumber() : Number(prop.actualResult || 0),
         hit: prop.hit || false,
         gameDate: prop.gameDate.toISOString().split('T')[0],
-        sport: prop.sport,
-        season: prop.season
+        sport: typeof prop.sport === 'string' ? prop.sport : prop.sport?.key || 'unknown',
+        season: prop.season || 'unknown'
       }));
     } catch (error) {
       console.error('Failed to get historical data:', error);
@@ -369,24 +338,7 @@ export class DataAutomationService {
   }
 
   /* ++++++++++ UTILITY METHODS ++++++++++ */
-  private getCurrentSeason(sport: string): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    
-    switch (sport) {
-      case 'basketball_nba':
-      case 'basketball_wnba':
-        return now.getMonth() >= 9 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
-      case 'americanfootball_nfl':
-        return now.getMonth() >= 8 ? year.toString() : (year - 1).toString();
-      case 'baseball_mlb':
-        return year.toString();
-      case 'icehockey_nhl':
-        return now.getMonth() >= 9 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
-      default:
-        return year.toString();
-    }
-  }
+  // getCurrentSeason method removed as it's not currently used
 
   /* ++++++++++ DATA MANAGEMENT ++++++++++ */
   async clearAllData(): Promise<void> {
