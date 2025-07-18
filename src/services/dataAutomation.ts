@@ -1,85 +1,85 @@
 /* ++++++++++ DATA AUTOMATION SERVICE ++++++++++ */
-import { fetchDFSProps, SUPPORTED_PLAYER_PROP_SPORTS } from './api';
+import { prisma } from './database';
+import { fetchDFSProps, fetchOdds, fetchPlayerProps } from './api';
+import { DataService } from './dataService';
+import type { PropData, HistoricalProp, Platform, Sport } from '@prisma/client';
 
-import { 
-  saveHistoricalProp, 
-  getHistoricalProps, 
-  calculateAndSaveHitRate, 
-  getHitRate
-} from './dataService';
-
-/* ++++++++++ TYPES ++++++++++ */
-interface HistoricalPropData {
-  id: string;
-  playerName: string;
-  propType: string;
-  line: number;
-  actualResult: number;
-  hit: boolean;
-  gameDate: string;
-  sport: string;
-  season: string;
-}
-
-interface PropHitRateData {
-  playerName: string;
-  propType: string;
-  line: number;
-  hitRate: number;
-  gameCount: number;
-  lastUpdated: string;
-  confidence: 'high' | 'medium' | 'low';
-}
-
-interface AutomationConfig {
-  refreshIntervalMinutes: number;
-  enableAutoRefresh: boolean;
+// Data automation interfaces
+export interface AutomationConfig {
+  enabled: boolean;
+  intervalMinutes: number;
   sports: string[];
   platforms: string[];
-  minGameSample: number;
+  maxRetries: number;
+  retryDelayMs: number;
 }
 
-/* ++++++++++ CONSTANTS ++++++++++ */
-const DEFAULT_CONFIG: AutomationConfig = {
-  refreshIntervalMinutes: 60, // Hourly refresh
-  enableAutoRefresh: true,
-  sports: SUPPORTED_PLAYER_PROP_SPORTS,
-  platforms: ['us_dfs.prizepicks', 'us_dfs.underdog', 'us_dfs.pick6'],
-  minGameSample: 10 // Minimum games for reliable hit rate
-};
+export interface DataPullResult {
+  success: boolean;
+  propsUpdated: number;
+  oddsUpdated: number;
+  errors: string[];
+  timestamp: Date;
+  executionTimeMs: number;
+}
 
-const STORAGE_KEYS = {
-  HISTORICAL_DATA: 'oddsly_historical_prop_data',
-  HIT_RATES: 'oddsly_hit_rates',
-  LAST_REFRESH: 'oddsly_last_refresh',
-  CONFIG: 'oddsly_automation_config'
-};
+export interface LineMovementData {
+  propId: string;
+  platform: string;
+  oldLine: number;
+  newLine: number;
+  oldOdds: number;
+  newOdds: number;
+  changePercent: number;
+  timestamp: Date;
+}
 
-/* ++++++++++ DATABASE UTILITIES ++++++++++ */
-// Database store class removed as it's not currently used
+export interface GameResult {
+  gameId: string;
+  sport: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  gameDate: Date;
+  status: 'FINAL' | 'POSTPONED' | 'CANCELLED';
+}
 
-/* ++++++++++ DATA AUTOMATION CLASS ++++++++++ */
+export interface PropResult {
+  propId: string;
+  playerId: string;
+  playerName: string;
+  propType: string;
+  line: number;
+  actualValue: number;
+  result: 'HIT' | 'MISS' | 'PUSH';
+  gameId: string;
+}
+
+// Data Automation Service
 export class DataAutomationService {
-  private config: AutomationConfig;
-  private refreshTimer: NodeJS.Timeout | null = null;
-  private isRefreshing = false;
+  private static instance: DataAutomationService;
+  private automationConfig: AutomationConfig;
+  private isRunning: boolean = false;
+  private intervalId: NodeJS.Timeout | null = null;
+  private lastRunTime: Date | null = null;
 
-  constructor(config?: Partial<AutomationConfig>) {
-    this.config = {
-      ...DEFAULT_CONFIG,
-      ...this.getStoredConfig(),
-      ...config
+  private constructor() {
+    this.automationConfig = {
+      enabled: process.env.DATA_AUTOMATION_ENABLED === 'true',
+      intervalMinutes: parseInt(process.env.DATA_AUTOMATION_INTERVAL_MINUTES || '60'),
+      sports: (process.env.DATA_AUTOMATION_SPORTS || 'nfl,nba,mlb,nhl,wnba').split(','),
+      platforms: (process.env.DATA_AUTOMATION_PLATFORMS || 'underdog,prizepicks,pick6').split(','),
+      maxRetries: parseInt(process.env.DATA_AUTOMATION_MAX_RETRIES || '3'),
+      retryDelayMs: parseInt(process.env.DATA_AUTOMATION_RETRY_DELAY_MS || '5000')
     };
-    this.saveConfig();
   }
 
-  private getStoredConfig(): Partial<AutomationConfig> {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.CONFIG);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
+  static getInstance(): DataAutomationService {
+    if (!DataAutomationService.instance) {
+      DataAutomationService.instance = new DataAutomationService();
     }
+    return DataAutomationService.instance;
   }
 
   /* ++++++++++ CONFIGURATION ++++++++++ */

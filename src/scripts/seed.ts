@@ -1,8 +1,9 @@
 #!/usr/bin/env tsx
 
 import { seedDatabase, connectDatabase, disconnectDatabase } from '../services/database';
-import { AuthService } from '../services/auth';
-import { DataService } from '../services/dataService';
+import { AuthService } from '../services/authService';
+import { DataServiceNode } from '../services/dataServiceNode';
+import { NODE_CONFIG } from '../config/nodeEnv';
 
 async function main() {
   console.log('🌱 Starting database seed...');
@@ -18,7 +19,7 @@ async function main() {
     await createAdminUser();
     
     // Seed sample historical data (optional)
-    if (process.env.SEED_SAMPLE_DATA === 'true') {
+    if (NODE_CONFIG.SEED_SAMPLE_DATA === 'true') {
       await seedSampleData();
     }
     
@@ -29,7 +30,7 @@ async function main() {
     console.log('- Admin user created');
     console.log('- System configuration set');
     
-    if (process.env.SEED_SAMPLE_DATA === 'true') {
+    if (NODE_CONFIG.SEED_SAMPLE_DATA === 'true') {
       console.log('- Sample historical data added');
     }
     
@@ -45,8 +46,8 @@ async function main() {
 
 async function createAdminUser() {
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@oddsly.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123!@#';
+    const adminEmail = NODE_CONFIG.ADMIN_EMAIL || 'admin@oddsly.com';
+    const adminPassword = NODE_CONFIG.ADMIN_PASSWORD || 'Admin123!@#';
     
     console.log('👤 Creating admin user...');
     
@@ -138,7 +139,7 @@ async function seedSampleData() {
             const actualResult = line + variance;
             const hit = actualResult >= line;
             
-            await DataService.saveHistoricalProp({
+            await DataServiceNode.saveHistoricalProp({
               playerName: player.name,
               propType: propType.type,
               line,
@@ -169,7 +170,7 @@ async function seedSampleData() {
             const actualResult = line + variance;
             const hit = actualResult >= line;
             
-            await DataService.saveHistoricalProp({
+            await DataServiceNode.saveHistoricalProp({
               playerName: player.name,
               propType: propType.type,
               line,
@@ -191,7 +192,7 @@ async function seedSampleData() {
     
     // Calculate and save hit rates
     console.log('📈 Calculating hit rates...');
-    const hitRateResult = await DataService.recalculateAllHitRates();
+    const hitRateResult = await DataServiceNode.recalculateAllHitRates();
     console.log(`✅ Calculated ${hitRateResult.hitRatesCount} hit rates`);
     
     if (hitRateResult.errors.length > 0) {

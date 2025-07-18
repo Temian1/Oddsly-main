@@ -11,7 +11,7 @@ import useAuth from '../../authorization/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ++++++++++ ICONS ++++++++++ */
-import { Settings, TrendingUp, Star, BarChart3 } from 'lucide-react';
+import { Settings, TrendingUp, Star, BarChart3, Shield } from 'lucide-react';
 // import { Settings, TrendingUp, Target, Star, BarChart3 } from 'lucide-react';
 
 /* ++++++++++ STYLES ++++++++++ */
@@ -103,6 +103,17 @@ const Header: React.FC = () => {
                       <Star size={20} />
                       Value
                     </Link>
+                    {/* Admin Dashboard Link - Only visible to admin users */}
+                    {(user.role === 'ADMIN' || user.role === 'admin') && (
+                      <Link 
+                        to="/admin"
+                        className="hover:text-neon transition-all duration-300 flex items-center gap-1 text-lg font-medium text-yellow-400"
+                        title="Admin Dashboard"
+                      >
+                        <Shield size={20} />
+                        Admin
+                      </Link>
+                    )}
                     <Link
                       to="/profile"
                       className="hover:text-neon transition-all duration-300"
