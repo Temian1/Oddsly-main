@@ -16,6 +16,7 @@ import MatchDetailsPage from './components/Match Details/MatchDetails';
 /* ++++++++++ PLAYER PROPS & EV ++++++++++ */
 import { PlayerProps } from './components/Player Props/PlayerProps';
 import EVPlayerProps from './components/Player Props/EVPlayerProps';
+import { useParams } from 'react-router-dom';
 import ValueHighlighter from './components/ValueHighlighting/ValueHighlighter';
 import EVDashboard from './components/Dashboard/EVDashboard';
 
@@ -44,6 +45,19 @@ import SupabaseTest from './components/SupabaseTest';
 import './App.css';
 
 const queryClient = new QueryClient();
+
+/* ++++++++++ EV PLAYER PROPS WITH PARAMS ++++++++++ */
+function EVPlayerPropsWithParams({ bankroll, setBankroll }: { bankroll: number; setBankroll: (value: number) => void }) {
+  const { sportKey, matchId } = useParams<{ sportKey: string; matchId: string }>();
+  return (
+    <EVPlayerProps 
+      sportKey={sportKey || 'basketball_nba'} 
+      matchId={matchId} 
+      bankroll={bankroll} 
+      setBankroll={setBankroll} 
+    />
+  );
+}
 
 function AppContent() {
   const [bankroll, setBankroll] = useState<number>(10000);
@@ -119,6 +133,14 @@ function AppContent() {
               element={
                 <PrivateRoute user={user}>
                   <EVPlayerProps sportKey="basketball_nba" bankroll={bankroll} setBankroll={setBankroll} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/ev-props/:sportKey/:matchId"
+              element={
+                <PrivateRoute user={user}>
+                  <EVPlayerPropsWithParams bankroll={bankroll} setBankroll={setBankroll} />
                 </PrivateRoute>
               }
             />

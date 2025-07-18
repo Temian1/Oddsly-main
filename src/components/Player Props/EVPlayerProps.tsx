@@ -329,12 +329,34 @@ const EVPlayerProps: React.FC<EVPlayerPropsProps> = ({
   /* ++++++++++ LOADING STATE ++++++++++ */
   if (!matchId) {
     return (
-      <Box className="flex items-center justify-center p-8">
-        <Typography color="text.secondary">
-          Please select a specific match to view EV analysis for player props.
-          Player props require a specific game/event ID according to the API.
-        </Typography>
-      </Box>
+      <ThemeProvider theme={theme}>
+        <Box className="space-y-6">
+          {/* Header */}
+          <Box className="flex justify-between items-center">
+            <Typography variant="h5" fontWeight="bold">
+              Fantasy Props EV Analysis
+            </Typography>
+          </Box>
+          
+          {/* Match Selection Message */}
+          <Box className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg">
+            <Typography variant="h6" color="text.primary" className="mb-4">
+              Select a Match to View Player Props
+            </Typography>
+            <Typography color="text.secondary" className="mb-6 text-center max-w-md">
+              Player props require a specific game/event ID. Please navigate to a specific match from the odds page to view EV analysis for player props.
+            </Typography>
+            <Button 
+              variant="contained" 
+              color="primary"
+              onClick={() => window.location.href = '/odds'}
+              size="large"
+            >
+              Go to Odds Page
+            </Button>
+          </Box>
+        </Box>
+      </ThemeProvider>
     );
   }
   

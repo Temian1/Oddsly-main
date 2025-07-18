@@ -10,7 +10,7 @@ import {
   GridCellParams,
 } from '@mui/x-data-grid';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { TextField, Switch, FormControlLabel } from '@mui/material';
+import { TextField, Switch, FormControlLabel, Button } from '@mui/material';
 
 interface MatchDetailsPageProps {
   bankroll: number;
@@ -474,6 +474,24 @@ const MatchDetailsPage: React.FC<MatchDetailsPageProps> = ({ bankroll, setBankro
           control={<Switch checked={showOnlyKellyBets} onChange={() => setShowOnlyKellyBets(!showOnlyKellyBets)} color="primary" />}
           label="Show Only Kelly Bets"
         />
+      </div>
+
+      {/* Player Props Navigation */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => window.location.href = `/ev-props/${sportKey}/${matchId}`}
+          sx={{ 
+            backgroundColor: '#200589',
+            '&:hover': { backgroundColor: '#1a0470' },
+            fontWeight: 'bold',
+            px: 4,
+            py: 1.5
+          }}
+        >
+          View Player Props EV Analysis
+        </Button>
       </div>
 
       <div className="space-y-8">
