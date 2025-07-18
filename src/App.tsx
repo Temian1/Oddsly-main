@@ -1,7 +1,7 @@
 /* ++++++++++ IMPORTS ++++++++++ */
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 /* ++++++++++ HEADER ++++++++++ */
 import Header from './components/Header/Header';
@@ -41,8 +41,14 @@ import PrivacyPolicyPage from './components/Legal/PrivacyPolicyPage';
 /* ++++++++++ SUPABASE TEST ++++++++++ */
 import SupabaseTest from './components/SupabaseTest';
 
+/* ++++++++++ ENVIRONMENT VALIDATION ++++++++++ */
+import { logEnvironmentStatus } from './utils/envValidation';
+
 /* ++++++++++ STYLES ++++++++++ */
 import './App.css';
+
+// Log environment status in development
+logEnvironmentStatus();
 
 const queryClient = new QueryClient();
 
@@ -81,7 +87,7 @@ function AppContent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <HashRouter>
         <div className="min-h-screen bg-[#171717]">
 
         {!isLoginPage && <Header />}
@@ -180,7 +186,7 @@ function AppContent() {
             <Route path="/supabase-test" element={<SupabaseTest />} />
           </Routes>
         </div>
-      </BrowserRouter>
+      </HashRouter>
     </QueryClientProvider>
   );
 }

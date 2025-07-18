@@ -2,6 +2,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
+/* ++++++++++ ERROR BOUNDARY ++++++++++ */
+import ErrorBoundary from './components/ErrorBoundary.tsx'
+
+/* ++++++++++ ENVIRONMENT GUARD ++++++++++ */
+import { EnvironmentGuard } from './components/EnvironmentError.tsx'
+
 /* ++++++++++ AUTHORIZATION ++++++++++ */
 import { AuthProvider } from './authorization/AuthContext.tsx'
 
@@ -12,11 +18,13 @@ import App from './App.tsx'
 import './index.css'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-    
+    <ErrorBoundary>
+      <EnvironmentGuard>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </EnvironmentGuard>
+    </ErrorBoundary>
   </StrictMode>,
 )
 
