@@ -28,7 +28,9 @@ import {
 import { SelectChangeEvent } from '@mui/material/Select';
 
 /* ++++++++++ SERVICES ++++++++++ */
-import { fetchDFSProps, DFS_PLATFORMS } from '../../services/api';
+import { DFS_PLATFORMS } from '../../services/api';
+import { useUserAwareApi } from '../../hooks/useUserAwareApi';
+import { useAuth } from '../../authorization/AuthContext';
 
 /* ++++++++++ UTILITIES ++++++++++ */
 import {
@@ -96,6 +98,9 @@ const EVPlayerProps: React.FC<EVPlayerPropsProps> = ({
   matchId,
   // bankroll = 1000 
 }) => {
+  /* ++++++++++ HOOKS ++++++++++ */
+  const { user } = useAuth();
+  const { fetchDFSProps } = useUserAwareApi();
   /* ++++++++++ STATE ++++++++++ */
   const [filters, setFilters] = useState<Partial<EVFilterOptions>>({
     minEV: 0,
@@ -111,14 +116,14 @@ const EVPlayerProps: React.FC<EVPlayerPropsProps> = ({
 
   /* ++++++++++ DATA FETCHING ++++++++++ */
   const { data: dfsData, isLoading, refetch } = useQuery({
-    queryKey: ['dfsProps', sportKey, matchId, filters.platforms],
+    queryKey: ['dfsProps', sportKey, matchId, filters.platforms, user?.id],
     queryFn: () => fetchDFSProps(
       sportKey, 
       matchId, 
       filters.platforms || Object.values(DFS_PLATFORMS),
       true // Include alternates
     ),
-    enabled: !!sportKey,
+    enabled: !!sportKey && !!matchId && !!user, // Require sportKey, matchId, and user
     refetchInterval: autoRefresh ? 60000 : false, // Refresh every minute if enabled
   });
 
@@ -322,6 +327,17 @@ const EVPlayerProps: React.FC<EVPlayerPropsProps> = ({
   };
 
   /* ++++++++++ LOADING STATE ++++++++++ */
+  if (!matchId) {
+    return (
+      <Box className="flex items-center justify-center p-8">
+        <Typography color="text.secondary">
+          Please select a specific match to view EV analysis for player props.
+          Player props require a specific game/event ID according to the API.
+        </Typography>
+      </Box>
+    );
+  }
+  
   if (isLoading) {
     return (
       <Box className="flex items-center justify-center p-8">

@@ -4,13 +4,13 @@ import jwt from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 import { prisma } from './database';
-import type { User, UserSession } from '@prisma/client';
+import type { UserSession } from '@prisma/client';
 
 // Environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-super-secret-refresh-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+// const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+// const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || '12');
 const TWO_FA_SERVICE_NAME = process.env.TWO_FA_SERVICE_NAME || 'Oddsly EV Platform';
 const TWO_FA_ISSUER = process.env.TWO_FA_ISSUER || 'Oddsly';
@@ -58,22 +58,22 @@ class JWTUtils {
   static generateAccessToken(userId: string, role: string): string {
     return jwt.sign(
       { userId, role, type: 'access' },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      JWT_SECRET as string,
+      { expiresIn: '24h' }
     );
   }
 
   static generateRefreshToken(userId: string): string {
     return jwt.sign(
       { userId, type: 'refresh' },
-      JWT_REFRESH_SECRET,
-      { expiresIn: JWT_REFRESH_EXPIRES_IN }
+      JWT_REFRESH_SECRET as string,
+      { expiresIn: '7d' }
     );
   }
 
   static verifyAccessToken(token: string): { userId: string; role: string } | null {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      const decoded = jwt.verify(token, JWT_SECRET as string) as any;
       if (decoded.type === 'access') {
         return { userId: decoded.userId, role: decoded.role };
       }
@@ -85,7 +85,7 @@ class JWTUtils {
 
   static verifyRefreshToken(token: string): { userId: string } | null {
     try {
-      const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as any;
+      const decoded = jwt.verify(token, JWT_REFRESH_SECRET as string) as any;
       if (decoded.type === 'refresh') {
         return { userId: decoded.userId };
       }
@@ -121,7 +121,6 @@ class TwoFAUtils {
     const otpauthUrl = speakeasy.otpauthURL({
       secret,
       label: email,
-      name: TWO_FA_SERVICE_NAME,
       issuer: TWO_FA_ISSUER
     });
     return QRCode.toDataURL(otpauthUrl);

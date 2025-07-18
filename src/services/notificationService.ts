@@ -397,7 +397,7 @@ export class NotificationService {
   /**
    * Check if alert already exists for this prop
    */
-  private async checkExistingAlert(userId: string, propId: string): Promise<boolean> {
+  private async checkExistingAlert(_userId: string, _propId: string): Promise<boolean> {
     // This would check the database for existing alerts
     // For now, return false (no existing alert)
     return false;
@@ -416,7 +416,7 @@ export class NotificationService {
   /**
    * Get user's alert history
    */
-  async getUserAlerts(userId: string, limit: number = 50): Promise<ValueAlert[]> {
+  async getUserAlerts(_userId: string, _limit: number = 50): Promise<ValueAlert[]> {
     // This would fetch from database
     return [];
   }

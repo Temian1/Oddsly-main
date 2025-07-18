@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
-import { fetchBothMatchDetails } from '../../services/api';
+import { useUserAwareApi } from '../../hooks/useUserAwareApi';
 // import { PlayerProps } from '../Player Props/PlayerProps';
 import { ArrowLeft, DollarSign } from 'lucide-react';
 import {
@@ -408,6 +408,7 @@ const MarketTable: React.FC<{
 
 const MatchDetailsPage: React.FC<MatchDetailsPageProps> = ({ bankroll, setBankroll }) => {
   const { sportKey, matchId } = useParams<{ sportKey: string; matchId: string }>();
+  const { fetchOdds } = useUserAwareApi();
 
   const [showOnlyKellyBets, setShowOnlyKellyBets] = useState<boolean>(false);
 
@@ -415,8 +416,13 @@ const MatchDetailsPage: React.FC<MatchDetailsPageProps> = ({ bankroll, setBankro
     queryKey: ['matchDetails', sportKey, matchId],
     queryFn: async () => {
       try {
-        const response = await fetchBothMatchDetails(sportKey!, matchId!);
-        return response;
+        const response = await fetchOdds(sportKey!, 'us', 'h2h,spreads,totals');
+        // Find the specific match by ID
+        const match = response.find((m: any) => m.id === matchId);
+        if (!match) {
+          throw new Error('Match not found');
+        }
+        return match;
       } catch (error) {
         console.error('Error fetching match details:', error);
         throw error;

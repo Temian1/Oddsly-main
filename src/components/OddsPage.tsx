@@ -15,7 +15,7 @@ import { TextField, Button, Switch, FormControlLabel } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 /* ++++++++++ SERVICES ++++++++++ */
-import { fetchOdds } from '../services/api';
+import { useUserAwareApi } from '../hooks/useUserAwareApi';
 
 
 /* ++++++++++ TYPES ++++++++++ */
@@ -572,6 +572,9 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
 
 /* ++++++++++ ODDS PAGE ++++++++++ */
 const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
+  /* ++++++++++ HOOKS ++++++++++ */
+  const { fetchOdds } = useUserAwareApi();
+  
   /* ++++++++++ STATE ++++++++++ */
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedSoccerLeague, setSelectedSoccerLeague] = useState<string | null>(null);

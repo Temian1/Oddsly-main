@@ -9,7 +9,7 @@
  */
 
 import { supabase } from '../lib/supabaseClient';
-import type { User } from '@prisma/client';
+// import type { User } from '@prisma/client';
 
 /**
  * Test Supabase connection by attempting to fetch users

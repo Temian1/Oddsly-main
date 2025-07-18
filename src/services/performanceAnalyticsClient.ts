@@ -111,7 +111,7 @@ export class PerformanceAnalyticsService {
    */
   async getUserPerformanceMetrics(
     userId: string,
-    timeframe?: { start: Date; end: Date }
+    _timeframe?: { start: Date; end: Date }
   ): Promise<PerformanceMetrics> {
     // In a real implementation, this would make an API call to the server
     // For now, return mock data
@@ -303,7 +303,7 @@ export class PerformanceAnalyticsService {
   /**
    * Get betting insights and recommendations (Mock data for browser)
    */
-  async getBettingInsights(userId: string): Promise<BettingInsights> {
+  async getBettingInsights(_userId: string): Promise<BettingInsights> {
     return {
       bestPerformingPlatform: 'PrizePicks',
       bestPerformingSport: 'NBA',
@@ -325,7 +325,7 @@ export class PerformanceAnalyticsService {
   /**
    * Get risk metrics (Mock data for browser)
    */
-  async getRiskMetrics(userId: string): Promise<RiskMetrics> {
+  async getRiskMetrics(_userId: string): Promise<RiskMetrics> {
     return {
       volatility: 0.25,
       valueAtRisk: 150,
@@ -350,7 +350,7 @@ export class PerformanceAnalyticsService {
   /**
    * Get performance comparison with other users (Mock data)
    */
-  async getPerformanceComparison(userId: string): Promise<{
+  async getPerformanceComparison(_userId: string): Promise<{
     userRank: number;
     totalUsers: number;
     percentile: number;

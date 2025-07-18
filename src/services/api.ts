@@ -69,8 +69,7 @@ const SPORT_MARKETS = {
     'player_first_team_basket',
     'player_double_double',
     'player_triple_double',
-    'player_method_of_first_basket',
-    'player_fantasy_points'
+    'player_method_of_first_basket'
   ],
   'basketball_wnba': [
     // WNBA markets (same as NBA)
@@ -96,8 +95,7 @@ const SPORT_MARKETS = {
     'player_first_team_basket',
     'player_double_double',
     'player_triple_double',
-    'player_method_of_first_basket',
-    'player_fantasy_points'
+    'player_method_of_first_basket'
   ],
   'basketball_ncaab': [
     // NCAAB markets (same as NBA)
@@ -123,8 +121,7 @@ const SPORT_MARKETS = {
     'player_first_team_basket',
     'player_double_double',
     'player_triple_double',
-    'player_method_of_first_basket',
-    'player_fantasy_points'
+    'player_method_of_first_basket'
   ],
   'americanfootball_nfl': [
     // Core NFL markets
@@ -158,8 +155,7 @@ const SPORT_MARKETS = {
     'player_tds_over',
     'player_1st_td',
     'player_anytime_td',
-    'player_last_td',
-    'player_fantasy_points'
+    'player_last_td'
   ],
   'americanfootball_ncaaf': [
     // NCAAF markets (same as NFL)
@@ -193,8 +189,7 @@ const SPORT_MARKETS = {
     'player_tds_over',
     'player_1st_td',
     'player_anytime_td',
-    'player_last_td',
-    'player_fantasy_points'
+    'player_last_td'
   ],
   'americanfootball_cfl': [
     // CFL markets (same as NFL)
@@ -228,8 +223,7 @@ const SPORT_MARKETS = {
     'player_tds_over',
     'player_1st_td',
     'player_anytime_td',
-    'player_last_td',
-    'player_fantasy_points'
+    'player_last_td'
   ],
   'baseball_mlb': [
     // MLB markets
@@ -241,15 +235,73 @@ const SPORT_MARKETS = {
     'player_runs',
     'player_rbis',
     'player_strikeouts',
-    'player_home_runs',
-    'player_fantasy_points'
+    'player_home_runs'
   ],
   'icehockey_nhl': [
     'player_goals',
     'player_assists',
     'player_shots_on_goal',
-    'player_saves',
-    'player_fantasy_points'
+    'player_saves'
+  ],
+  'soccer_epl': [
+    'player_goal_scorer_anytime',
+    'player_first_goal_scorer',
+    'player_last_goal_scorer',
+    'player_to_receive_card',
+    'player_to_receive_red_card',
+    'player_shots_on_target',
+    'player_shots',
+    'player_assists'
+  ],
+  'soccer_france_ligue_one': [
+    'player_goal_scorer_anytime',
+    'player_first_goal_scorer',
+    'player_last_goal_scorer',
+    'player_to_receive_card',
+    'player_to_receive_red_card',
+    'player_shots_on_target',
+    'player_shots',
+    'player_assists'
+  ],
+  'soccer_germany_bundesliga': [
+    'player_goal_scorer_anytime',
+    'player_first_goal_scorer',
+    'player_last_goal_scorer',
+    'player_to_receive_card',
+    'player_to_receive_red_card',
+    'player_shots_on_target',
+    'player_shots',
+    'player_assists'
+  ],
+  'soccer_italy_serie_a': [
+    'player_goal_scorer_anytime',
+    'player_first_goal_scorer',
+    'player_last_goal_scorer',
+    'player_to_receive_card',
+    'player_to_receive_red_card',
+    'player_shots_on_target',
+    'player_shots',
+    'player_assists'
+  ],
+  'soccer_spain_la_liga': [
+    'player_goal_scorer_anytime',
+    'player_first_goal_scorer',
+    'player_last_goal_scorer',
+    'player_to_receive_card',
+    'player_to_receive_red_card',
+    'player_shots_on_target',
+    'player_shots',
+    'player_assists'
+  ],
+  'soccer_usa_mls': [
+    'player_goal_scorer_anytime',
+    'player_first_goal_scorer',
+    'player_last_goal_scorer',
+    'player_to_receive_card',
+    'player_to_receive_red_card',
+    'player_shots_on_target',
+    'player_shots',
+    'player_assists'
   ]
 } as const;
 
@@ -362,10 +414,10 @@ const LEGACY_ALTERNATE_MARKETS = [
 ] as const;
 
 // Define the type using the values
-type PlayerPropMarket = (typeof PLAYER_PROP_MARKETS)[number];
+// type PlayerPropMarket = (typeof PLAYER_PROP_MARKETS)[number];
 
 // Create a non-readonly array of the markets for the default parameter
-const defaultMarkets: PlayerPropMarket[] = [...PLAYER_PROP_MARKETS];
+// const defaultMarkets: PlayerPropMarket[] = [...PLAYER_PROP_MARKETS];
 
 export const fetchSports = async () => {
   try {
@@ -513,11 +565,17 @@ export const getAlternateMarkets = (sport: string): string[] => {
 export const fetchDFSProps = async (
   sport: string,
   matchId?: string,
-  platforms: string[] = Object.values(DFS_PLATFORMS),
+  _platforms: string[] = Object.values(DFS_PLATFORMS),
   includeAlternates: boolean = true
 ) => {
   if (!SUPPORTED_PLAYER_PROP_SPORTS.includes(sport)) {
     console.warn(`fetchDFSProps not supported for: ${sport}`);
+    return [];
+  }
+  
+  // DFS props require a specific match/event ID according to API docs
+  if (!matchId) {
+    console.warn('fetchDFSProps requires a matchId for player props');
     return [];
   }
   
@@ -528,21 +586,28 @@ export const fetchDFSProps = async (
     // Get sport-specific alternate markets
     const alternateMarkets = includeAlternates ? getAlternateMarkets(sport) : [];
     
-    const markets = [...baseMarkets, ...alternateMarkets];
+    // Limit markets to avoid URL length issues
+    const markets = [...baseMarkets.slice(0, 6), ...alternateMarkets.slice(0, 4)];
     
-    const endpoint = matchId 
-      ? `${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`
-      : `${API_BASE_URL}/sports/${sport}/odds`;
+    // Use the events endpoint as required by API for player props
+    const endpoint = `${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`;
     
     const response = await axios.get(endpoint, {
       params: {
         apiKey: API_KEY,
-        regions: 'us_dfs',
-        bookmakers: platforms.join(','),
+        regions: 'us,us2', // Use standard US regions instead of us_dfs
         markets: markets.join(','),
         oddsFormat: 'american'
       }
     });
+    
+    // Filter response to only include DFS-like bookmakers if needed
+    if (response.data && response.data.bookmakers) {
+      // For now, return all bookmakers since DFS-specific filtering may not work
+      // In the future, you could filter by specific bookmaker keys if available
+      return response.data;
+    }
+    
     return response.data;
   } catch (error) {
     console.error('Error fetching DFS props:', error);

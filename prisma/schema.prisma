@@ -33,6 +33,12 @@ model User {
   isVerified         Boolean   @default(false) @map("is_verified")
   lastLoginAt        DateTime? @map("last_login_at")
   
+  // API Configuration
+  oddsApiKey         String?   @map("odds_api_key") // User's personal Odds API key
+  apiKeyActive       Boolean   @default(false) @map("api_key_active") // Whether to use personal key
+  apiUsageCount      Int       @default(0) @map("api_usage_count") // Track API usage
+  apiUsageResetDate  DateTime? @map("api_usage_reset_date") // Monthly reset date
+  
   // Preferences
   preferences        Json?     @default("{}")
   

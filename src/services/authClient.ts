@@ -30,6 +30,11 @@ export interface UserProfile {
   twoFaEnabled: boolean;
   isVerified: boolean;
   createdAt: Date;
+  // API Configuration
+  oddsApiKey?: string;
+  apiKeyActive?: boolean;
+  apiUsageCount?: number;
+  apiUsageResetDate?: Date;
 }
 
 export interface TwoFASetup {

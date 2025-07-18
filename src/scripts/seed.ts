@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { seedDatabase, connectDatabase, disconnectDatabase } from '../services/database';
-import { AuthService } from '../services/authService';
+import { AuthService } from '../services/authClient';
 import { DataServiceNode } from '../services/dataServiceNode';
 import { NODE_CONFIG } from '../config/nodeEnv';
 
@@ -19,7 +19,7 @@ async function main() {
     await createAdminUser();
     
     // Seed sample historical data (optional)
-    if (NODE_CONFIG.SEED_SAMPLE_DATA === 'true') {
+    if (NODE_CONFIG.SEED_SAMPLE_DATA) {
       await seedSampleData();
     }
     
@@ -30,7 +30,7 @@ async function main() {
     console.log('- Admin user created');
     console.log('- System configuration set');
     
-    if (NODE_CONFIG.SEED_SAMPLE_DATA === 'true') {
+    if (NODE_CONFIG.SEED_SAMPLE_DATA) {
       console.log('- Sample historical data added');
     }
     

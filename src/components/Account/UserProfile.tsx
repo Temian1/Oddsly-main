@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../authorization/AuthContext';
 // import { useAuth, usePremium } from '../../authorization/AuthContext';
 import { AuthService } from '../../services/authClient';
+import UserAwareApiService from '../../services/userAwareApi';
 // Icons removed as they are not currently used in this component
 
 interface UserProfileData {
   fullName: string;
   dateOfBirth: string;
   subscriptionStatus: string;
+  oddsApiKey: string;
+  apiKeyActive: boolean;
+  apiUsageCount?: number;
 }
 
 const UserProfile: React.FC = () => {
@@ -21,6 +25,14 @@ const UserProfile: React.FC = () => {
 
   // Profile state
   const [profile, setProfile] = useState<UserProfileData | null>(null);
+  
+  // API key validation state
+  const [validatingApiKey, setValidatingApiKey] = useState(false);
+  const [apiKeyValidation, setApiKeyValidation] = useState<{
+    valid?: boolean;
+    error?: string;
+    remainingRequests?: number;
+  } | null>(null);
 
   // 2FA State - Currently unused
   // const [show2FASetup, setShow2FASetup] = useState(false);
@@ -37,10 +49,35 @@ const UserProfile: React.FC = () => {
         fullName: user.fullName || '',
         dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
         subscriptionStatus: user.subscriptionStatus || 'free',
+        oddsApiKey: user.oddsApiKey || '',
+        apiKeyActive: user.apiKeyActive || false,
       });
     }
     setLoading(false);
   }, [user]);
+
+  // Handle API key validation
+  const handleValidateApiKey = async () => {
+    if (!profile?.oddsApiKey) {
+      setApiKeyValidation({ valid: false, error: 'Please enter an API key first' });
+      return;
+    }
+
+    setValidatingApiKey(true);
+    setApiKeyValidation(null);
+
+    try {
+      const validation = await UserAwareApiService.validateApiKey(profile.oddsApiKey);
+      setApiKeyValidation(validation);
+    } catch (error) {
+      setApiKeyValidation({
+        valid: false,
+        error: 'Failed to validate API key. Please try again.',
+      });
+    } finally {
+      setValidatingApiKey(false);
+    }
+  };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,6 +96,8 @@ const UserProfile: React.FC = () => {
       await AuthService.updateProfile(user.id, {
         fullName: profile.fullName,
         dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth) : undefined,
+        oddsApiKey: profile.oddsApiKey || undefined,
+        apiKeyActive: profile.apiKeyActive,
       });
       
       await refreshAuth();
@@ -134,6 +173,94 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
 
+        {/* API Key Management */}
+        <div className="border-t pt-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-3">API Configuration</h3>
+          
+          {/* Personal API Key */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Personal Odds API Key</label>
+            <div className="flex gap-2">
+              <input
+                type="password"
+                value={profile?.oddsApiKey || ''}
+                onChange={(e) => {
+                  setProfile(profile ? { ...profile, oddsApiKey: e.target.value } : null);
+                  setApiKeyValidation(null); // Clear validation when key changes
+                }}
+                disabled={!editing}
+                placeholder="Enter your personal Odds API key (optional)"
+                className="mt-1 flex-1 border border-gray-300 rounded-md shadow-sm p-2"
+              />
+              {editing && profile?.oddsApiKey && (
+                <button
+                  type="button"
+                  onClick={handleValidateApiKey}
+                  disabled={validatingApiKey}
+                  className="mt-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {validatingApiKey ? 'Validating...' : 'Validate'}
+                </button>
+              )}
+            </div>
+            
+            {/* API Key Validation Status */}
+            {apiKeyValidation && (
+              <div className={`mt-2 p-2 rounded-md text-sm ${
+                apiKeyValidation.valid 
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                {apiKeyValidation.valid ? (
+                  <div>
+                    ✅ API key is valid!
+                    {apiKeyValidation.remainingRequests && (
+                      <span className="block mt-1">
+                        Remaining requests: {apiKeyValidation.remainingRequests}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    ❌ {apiKeyValidation.error || 'API key is invalid'}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <p className="mt-1 text-xs text-gray-500">
+              Optional: Use your own Odds API key for higher rate limits. Get one from{' '}
+              <a href="https://the-odds-api.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                the-odds-api.com
+              </a>
+            </p>
+          </div>
+
+          {/* Use Personal API Key Toggle */}
+          <div className="mt-3">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={profile?.apiKeyActive || false}
+                onChange={(e) => setProfile(profile ? { ...profile, apiKeyActive: e.target.checked } : null)}
+                disabled={!editing || !profile?.oddsApiKey}
+                className="mr-2"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Use my personal API key
+              </span>
+            </label>
+            <p className="mt-1 text-xs text-gray-500">
+              When enabled, your personal API key will be used instead of the shared one.
+              {profile?.apiUsageCount !== undefined && (
+                <span className="block mt-1">
+                  Current month usage: {profile.apiUsageCount} requests
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
         {/* Edit and Save Buttons */}
         <div className="flex items-center justify-between">
           {!editing ? (
@@ -163,6 +290,8 @@ const UserProfile: React.FC = () => {
                       fullName: user.fullName || '',
                       dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
                       subscriptionStatus: user.subscriptionStatus || 'free',
+                      oddsApiKey: user.oddsApiKey || '',
+                      apiKeyActive: user.apiKeyActive || false,
                     });
                   }
                 }}

@@ -1,13 +1,18 @@
 /* ++++++++++ ADMIN DASHBOARD COMPONENT ++++++++++ */
 import React, { useState, useEffect } from 'react';
-import { AuthService } from '../../services/authClient';
-import { PerformanceAnalyticsService } from '../../services/performanceAnalyticsClient';
 import dataAutomationClient from '../../services/dataAutomationClient';
-import { NotificationServiceClient } from '../../services/notificationServiceClient';
-import type { UserProfile } from '../../types/auth';
-import type { BettingPerformance } from '../../services/performanceAnalyticsClient';
 
 // Admin interfaces
+interface UserProfile {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role: string;
+  isActive: boolean;
+  createdAt?: string;
+}
+
 interface SystemStats {
   totalUsers: number;
   activeUsers: number;
@@ -72,13 +77,35 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const loadUserManagement = async (page: number, pageSize: number): Promise<UserManagementData> => {
-    // This would call the admin user management API
-    const adminUserId = 'current-admin-id'; // Get from auth context
-    const users = await AuthService.getAllUsers(adminUserId);
+    // TODO: Implement admin user management API
+    // const adminUserId = 'current-admin-id'; // Get from auth context
+    // const users = await AuthService.getAllUsers(adminUserId);
+    
+    // Mock data for now
+    const mockUsers: UserProfile[] = [
+      {
+        id: '1',
+        email: 'user1@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'USER',
+        isActive: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: '2',
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'ADMIN',
+        isActive: true,
+        createdAt: new Date().toISOString()
+      }
+    ];
     
     return {
-      users: users.slice((page - 1) * pageSize, page * pageSize),
-      totalCount: users.length,
+      users: mockUsers.slice((page - 1) * pageSize, page * pageSize),
+      totalCount: mockUsers.length,
       currentPage: page,
       pageSize
     };
@@ -86,8 +113,10 @@ export const AdminDashboard: React.FC = () => {
 
   const handleUserRoleUpdate = async (userId: string, newRole: string) => {
     try {
-      const adminUserId = 'current-admin-id'; // Get from auth context
-      await AuthService.updateUserRole(adminUserId, userId, newRole);
+      // TODO: Implement user role update API
+      // const adminUserId = 'current-admin-id'; // Get from auth context
+      // await AuthService.updateUserRole(adminUserId, userId, newRole);
+      console.log(`Updating user ${userId} role to ${newRole}`);
       await loadUserManagement(userManagement?.currentPage || 1, userManagement?.pageSize || 10);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update user role');
@@ -327,7 +356,7 @@ const UserManagementTab: React.FC<{
   userManagement: UserManagementData | null;
   onRoleUpdate: (userId: string, newRole: string) => void;
   onLoadUsers: (page: number, pageSize: number) => Promise<UserManagementData>;
-}> = ({ userManagement, onRoleUpdate, onLoadUsers }) => {
+}> = ({ userManagement, onRoleUpdate }) => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');

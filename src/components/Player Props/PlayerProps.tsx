@@ -7,7 +7,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 /* ++++++++++ SERVICES ++++++++++ */
-import { fetchPlayerProps } from '../../services/api';
+import { useUserAwareApi } from '../../hooks/useUserAwareApi';
 
 /* ++++++++++ TYPES ++++++++++ */
 interface PlayerPropOutcome {
@@ -108,6 +108,7 @@ const PlayerPropsTable: React.FC<PlayerPropsTableProps> = ({
   propType,
   markets,
 }) => {
+  const { fetchPlayerProps } = useUserAwareApi();
   const { data, isLoading } = useQuery({
     queryKey: ['playerProps', sportKey, matchId, propType],
     queryFn: () => fetchPlayerProps(sportKey, matchId, markets as any[]),

@@ -1,8 +1,5 @@
 /* ++++++++++ DATA AUTOMATION SERVICE ++++++++++ */
-import { prisma } from './database';
-import { fetchDFSProps, fetchOdds, fetchPlayerProps } from './api';
-import { DataService } from './dataService';
-import type { PropData, HistoricalProp, Platform, Sport } from '@prisma/client';
+import { fetchDFSProps } from './api';
 
 // Data automation interfaces
 export interface AutomationConfig {
@@ -56,15 +53,38 @@ export interface PropResult {
   gameId: string;
 }
 
+export interface HistoricalPropData {
+  id: string;
+  playerName: string;
+  propType: string;
+  line: number;
+  actualResult: number;
+  hit: boolean;
+  gameDate: string;
+  sport: string;
+  season: string;
+}
+
+export interface PropHitRateData {
+  playerName: string;
+  propType: string;
+  line: number;
+  hitRate: number;
+  gameCount: number;
+  confidence: 'high' | 'medium' | 'low';
+}
+
 // Data Automation Service
 export class DataAutomationService {
   private static instance: DataAutomationService;
   private automationConfig: AutomationConfig;
-  private isRunning: boolean = false;
-  private intervalId: NodeJS.Timeout | null = null;
-  private lastRunTime: Date | null = null;
+  // private isRunning: boolean = false;
+  // private intervalId: NodeJS.Timeout | null = null;
+  // private lastRunTime: Date | null = null;
+  private refreshTimer: NodeJS.Timeout | null = null;
+  private isRefreshing: boolean = false;
 
-  private constructor() {
+  constructor() {
     this.automationConfig = {
       enabled: process.env.DATA_AUTOMATION_ENABLED === 'true',
       intervalMinutes: parseInt(process.env.DATA_AUTOMATION_INTERVAL_MINUTES || '60'),
@@ -84,18 +104,20 @@ export class DataAutomationService {
 
   /* ++++++++++ CONFIGURATION ++++++++++ */
   updateConfig(newConfig: Partial<AutomationConfig>): void {
-    this.config = { ...this.config, ...newConfig };
+    this.automationConfig = { ...this.automationConfig, ...newConfig };
     this.saveConfig();
     this.restartAutomation();
   }
 
   getConfig(): AutomationConfig {
-    return { ...this.config };
+    return { ...this.automationConfig };
   }
 
   private saveConfig(): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(this.config));
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('AUTOMATION_CONFIG', JSON.stringify(this.automationConfig));
+      }
     } catch (error) {
       console.warn('Failed to save automation config:', error);
     }
@@ -103,16 +125,16 @@ export class DataAutomationService {
 
   /* ++++++++++ AUTOMATION CONTROL ++++++++++ */
   startAutomation(): void {
-    if (!this.config.enableAutoRefresh) return;
+    if (!this.automationConfig.enabled) return;
 
     this.stopAutomation();
     
-    const intervalMs = this.config.refreshIntervalMinutes * 60 * 1000;
+    const intervalMs = this.automationConfig.intervalMinutes * 60 * 1000;
     this.refreshTimer = setInterval(() => {
       this.refreshAllData();
     }, intervalMs);
 
-    console.log(`Data automation started - refreshing every ${this.config.refreshIntervalMinutes} minutes`);
+    console.log(`Data automation started - refreshing every ${this.automationConfig.intervalMinutes} minutes`);
   }
 
   stopAutomation(): void {
@@ -140,13 +162,15 @@ export class DataAutomationService {
     try {
       console.log('Starting automated data refresh...');
       
-      const refreshPromises = this.config.sports.map(sport => 
+      const refreshPromises = this.automationConfig.sports.map(sport => 
         this.refreshSportData(sport)
       );
 
       await Promise.allSettled(refreshPromises);
       
-      localStorage.setItem(STORAGE_KEYS.LAST_REFRESH, new Date().toISOString());
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('LAST_REFRESH', new Date().toISOString());
+      }
       
       const duration = Date.now() - startTime;
       console.log(`Data refresh completed in ${duration}ms`);
@@ -160,7 +184,7 @@ export class DataAutomationService {
 
   private async refreshSportData(sport: string): Promise<void> {
     try {
-      const data = await fetchDFSProps(sport, undefined, this.config.platforms, true);
+      const data = await fetchDFSProps(sport, undefined, this.automationConfig.platforms, true);
       
       if (data?.bookmakers?.length) {
         await this.processNewPropData(sport, data);
@@ -190,7 +214,8 @@ export class DataAutomationService {
           };
           
           try {
-            await saveHistoricalProp(propData);
+            // TODO: Implement saveHistoricalProp function
+            console.log('Would save historical prop:', propData);
           } catch (error) {
             console.warn('Failed to save historical prop:', error);
           }
@@ -221,7 +246,8 @@ export class DataAutomationService {
     };
 
     try {
-      await saveHistoricalProp(historicalData);
+      // TODO: Implement saveHistoricalProp function
+      console.log('Would save historical data:', historicalData);
       await this.updateHitRates(playerName, propType, line);
     } catch (error) {
       console.error('Failed to add historical result:', error);
@@ -248,7 +274,8 @@ export class DataAutomationService {
     try {
       const historicalData = await this.getHistoricalData(playerName, propType, line);
       
-      if (historicalData.length < this.config.minGameSample) {
+      const minGameSample = 10; // Default minimum sample size
+      if (historicalData.length < minGameSample) {
         return; // Not enough data for reliable hit rate
       }
 
@@ -256,7 +283,8 @@ export class DataAutomationService {
       const hitRate = hits / historicalData.length;
       const confidence = this.calculateConfidence(historicalData.length, hitRate);
 
-      await calculateAndSaveHitRate({
+      // TODO: Implement calculateAndSaveHitRate function
+      console.log('Would save hit rate:', {
         playerName,
         propType,
         line,
@@ -269,10 +297,10 @@ export class DataAutomationService {
     }
   }
 
-  async getHitRate(playerName: string, propType: string, line: number): Promise<number> {
+  async getHitRate(_playerName: string, _propType: string, _line: number): Promise<number> {
     try {
-      const hitRateData = await getHitRate(playerName, propType, line);
-      return hitRateData || 0.5; // Default to 50% if no data
+      // TODO: Implement getHitRate function
+      return 0.5; // Default to 50% if no data
     } catch (error) {
       console.warn('Failed to get hit rate:', error);
       return 0.5;
@@ -287,18 +315,14 @@ export class DataAutomationService {
 
   /* ++++++++++ DATA RETRIEVAL ++++++++++ */
   async getHistoricalData(
-    playerName?: string, 
-    propType?: string, 
-    line?: number,
-    limit?: number
+    _playerName?: string, 
+    _propType?: string, 
+    _line?: number,
+    _limit?: number
   ): Promise<HistoricalPropData[]> {
     try {
-      const data = await getHistoricalProps({
-        playerName,
-        propType,
-        line,
-        limit
-      });
+      // TODO: Implement getHistoricalProps function
+      const data: any[] = [];
       
       // Convert database format to expected format
       return data.map(prop => ({
@@ -331,7 +355,10 @@ export class DataAutomationService {
 
   getLastRefreshTime(): string | null {
     try {
-      return localStorage.getItem(STORAGE_KEYS.LAST_REFRESH);
+      if (typeof localStorage !== 'undefined') {
+        return localStorage.getItem('LAST_REFRESH');
+      }
+      return null;
     } catch {
       return null;
     }
@@ -344,9 +371,10 @@ export class DataAutomationService {
   async clearAllData(): Promise<void> {
     try {
       // Clear localStorage config
-      Object.values(STORAGE_KEYS).forEach(key => {
-        localStorage.removeItem(key);
-      });
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('AUTOMATION_CONFIG');
+        localStorage.removeItem('LAST_REFRESH');
+      }
       
       // Clear database data would need to be implemented in dataService
       console.log('All stored data cleared');
@@ -361,7 +389,7 @@ export class DataAutomationService {
         historicalData: await this.getHistoricalData(),
         hitRates: await this.getAllHitRates(),
         lastRefresh: this.getLastRefreshTime(),
-        config: this.config
+        config: this.automationConfig
       };
       
       return JSON.stringify(data, null, 2);
@@ -378,7 +406,8 @@ export class DataAutomationService {
       if (data.historicalData) {
         // Import historical data to database
         for (const prop of data.historicalData) {
-          await saveHistoricalProp({
+          // TODO: Implement saveHistoricalProp function
+          console.log('Would save historical prop:', {
             playerName: prop.playerName,
             propType: prop.propType,
             line: prop.line,
@@ -412,7 +441,7 @@ export class DataAutomationService {
       return {
         isRunning: !!this.refreshTimer,
         isRefreshing: this.isRefreshing,
-        config: this.config,
+        config: this.automationConfig,
         dataStats: {
           historicalRecords: historicalData.length,
           hitRateRecords: hitRates.length,
@@ -424,7 +453,7 @@ export class DataAutomationService {
       return {
         isRunning: !!this.refreshTimer,
         isRefreshing: this.isRefreshing,
-        config: this.config,
+        config: this.automationConfig,
         dataStats: {
           historicalRecords: 0,
           hitRateRecords: 0,

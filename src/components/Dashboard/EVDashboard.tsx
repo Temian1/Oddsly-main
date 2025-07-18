@@ -53,7 +53,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 
 /* ++++++++++ IMPORTS ++++++++++ */
-import { fetchDFSProps, SUPPORTED_PLAYER_PROP_SPORTS, calculateImpliedProbability, calculateEV, isPositiveEV } from '../../services/api';
+import { SUPPORTED_PLAYER_PROP_SPORTS, calculateImpliedProbability, calculateEV, isPositiveEV } from '../../services/api';
+import { useUserAwareApi } from '../../hooks/useUserAwareApi';
 import { PropEVData, calculatePropEVFromData, getConfidenceLevel, formatEVPercentage, formatHitRate } from '../../utils/evCalculations';
 import { dataAutomationClient } from '../../services/dataAutomationClient';
 import ValueHighlighter from '../ValueHighlighting/ValueHighlighter';
@@ -114,6 +115,7 @@ export const EVDashboard: React.FC<EVDashboardProps> = ({
   // bankroll = 10000, // Currently unused
   // setBankroll // Currently unused
 }) => {
+  const { fetchDFSProps } = useUserAwareApi();
   const [selectedSport] = useState<string>('all'); // setSelectedSport removed as unused
   const [quickFilter, setQuickFilter] = useState<QuickFilter>({
     sport: 'all',
@@ -133,7 +135,7 @@ export const EVDashboard: React.FC<EVDashboardProps> = ({
     queryFn: async () => {
       const sports = selectedSport === 'all' ? SUPPORTED_PLAYER_PROP_SPORTS : [selectedSport];
       const results = await Promise.allSettled(
-        sports.map(sport => fetchDFSProps(sport, undefined, DFS_PLATFORMS, true))
+        sports.map(sport => fetchDFSProps(sport, 'upcoming', DFS_PLATFORMS, true))
       );
       
       return results
